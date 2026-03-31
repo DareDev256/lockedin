@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embed LockedIn Widget</title>
+  <meta name="description" content="Add a LockedIn Follow All widget to any website with a single script tag." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #06060c;
+      color: #e2e8f0;
+      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 45, 120, 0.1);
+      border: 1px solid rgba(255, 45, 120, 0.2);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #ff2d78;
+      margin-bottom: 20px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 48px;
+      max-width: 540px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 48px 0 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff2d78, #ff6b35);
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    p, li {
+      color: rgba(255,255,255,0.6);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    li { margin-bottom: 8px; }
+
+    code {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: #ff6b35;
+    }
+
+    .code-block {
+      position: relative;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin: 16px 0 24px;
+      overflow-x: auto;
+    }
+
+    .code-block pre {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.8);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .code-block .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-block .copy-btn:hover {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    .tag {
+      color: #ff2d78;
+    }
+
+    .attr {
+      color: #ff6b35;
+    }
+
+    .str {
+      color: #64ffda;
+    }
+
+    .comment {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .demo-section {
+      margin: 48px 0;
+      padding: 32px 24px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+    }
+
+    .demo-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 16px;
+    }
+
+    .options-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    .options-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .options-table td {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .options-table td:first-child {
+      font-family: 'Space Mono', monospace;
+      color: #ff6b35;
+      font-size: 13px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin: 48px 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding-top: 32px;
+    }
+
+    .footer a {
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .footer a:hover { color: #ff2d78; }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #ff2d78;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: gap 0.2s;
+    }
+
+    .cta-link:hover { gap: 12px; }
+
+    @media (max-width: 480px) {
+      .container { padding: 40px 16px 60px; }
+      .code-block { padding: 16px; }
+      .code-block pre { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">// widget</div>
+    <h1>Embed LockedIn on Your Site</h1>
+    <p class="subtitle">Add a Follow All widget to any website with a single script tag. Your visitors can follow you everywhere, save your contact, and view your full profile.</p>
+
+    <h2><span class="step-num">1</span> Create your LockedIn profile</h2>
+    <p>Head to <a href="https://tapin-bay.vercel.app" style="color:#ff2d78;text-decoration:none;">tapin-bay.vercel.app</a> and fill in your platforms. Once done, copy the full URL from your browser's address bar.</p>
+    <p>The URL looks like this:</p>
+    <div class="code-block">
+      <pre>https://tapin-bay.vercel.app#<span class="str">eyJuIjoiSmFtZ...</span></pre>
+    </div>
+    <p>The part after the <code>#</code> is your profile hash. That is the value you need for the widget.</p>
+
+    <h2><span class="step-num">2</span> Add the script tag</h2>
+    <p>Paste the following into your HTML, replacing <code>YOUR_PROFILE_HASH</code> with the value from step 1:</p>
+
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><span class="comment">&lt;!-- LockedIn Widget (button mode) --&gt;</span>
+<span class="tag">&lt;script</span>
+  <span class="attr">src</span>=<span class="str">"https://tapin-bay.vercel.app/widget.js"</span>
+  <span class="attr">data-profile</span>=<span class="str">"YOUR_PROFILE_HASH"</span>
+<span class="tag">&gt;&lt;/script&gt;</span></pre>
+    </div>
+
+    <p>This renders a floating pill button in the bottom-right corner. Clicking it opens a mini card with your profiles and a Follow All button.</p>
+
+    <h2><span class="step-num">3</span> Choose your mode</h2>
+
+    <table class="options-table">
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>data-profile</td>
+          <td>Base64 string</td>
+          <td>Your encoded profile hash (required)</td>
+        </tr>
+        <tr>
+          <td>data-mode</td>
+          <td>"button" | "inline"</td>
+          <td>Floating button (default) or inline card</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:rgba(255,255,255,0.8);font-size:16px;margin-top:28px;">Button mode (default)</h3>
+    <p>A fixed-position pill button that expands into a card on click. Best for portfolios, blogs, and landing pages.</p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tag">&lt;script</span>
+  <span class="attr">src</span>=<span class="str">"https://tapin-bay.vercel.app/widget.js"</span>
+  <span class="attr">data-profile</span>=<span class="str">"YOUR_PROFILE_HASH"</span>
+<span class="tag">&gt;&lt;/script&gt;</span></pre>
+    </div>
+
+    <h3 style="color:rgba(255,255,255,0.8);font-size:16px;margin-top:28px;">Inline mode</h3>
+    <p>Renders a card directly in the page where the script tag is placed. Best for about pages, contact sections, or sidebars.</p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tag">&lt;script</span>
+  <span class="attr">src</span>=<span class="str">"https://tapin-bay.vercel.app/widget.js"</span>
+  <span class="attr">data-profile</span>=<span class="str">"YOUR_PROFILE_HASH"</span>
+  <span class="attr">data-mode</span>=<span class="str">"inline"</span>
+<span class="tag">&gt;&lt;/script&gt;</span></pre>
+    </div>
+
+    <hr class="divider" />
+
+    <h2 style="margin-top:0;"><span class="step-num">?</span> What the widget does</h2>
+    <ul>
+      <li>Displays your name, handle, bio, and avatar (pulled from GitHub if linked)</li>
+      <li><strong>Follow All</strong> opens each of your platform profiles in sequence (600ms stagger to avoid popup blocking)</li>
+      <li>Individual platform icons link directly to your profiles</li>
+      <li><strong>Save Contact</strong> generates and downloads a vCard (.vcf) file with all your links</li>
+      <li>Links to your full LockedIn profile page</li>
+    </ul>
+
+    <h2><span class="step-num">!</span> Technical details</h2>
+    <ul>
+      <li>Zero dependencies, vanilla JavaScript (&lt;15KB)</li>
+      <li>Self-contained CSS with <code>.lkin-</code> prefix; will not conflict with your styles</li>
+      <li>Dark glassmorphism design; looks great on any background</li>
+      <li>Responsive, works on mobile</li>
+      <li>No cookies, no tracking, no external requests except Google Fonts and GitHub avatars</li>
+    </ul>
+
+    <div class="demo-section">
+      <h3>Quick test</h3>
+      <p style="margin-bottom:16px;">Create your profile at <a href="https://tapin-bay.vercel.app" style="color:#ff2d78;text-decoration:none;">LockedIn</a>, copy the hash from the URL, and paste this into any HTML file:</p>
+      <div class="code-block" style="margin-bottom:0;">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+  <span class="tag">&lt;h1&gt;</span>My Site<span class="tag">&lt;/h1&gt;</span>
+  <span class="tag">&lt;script</span>
+    <span class="attr">src</span>=<span class="str">"https://tapin-bay.vercel.app/widget.js"</span>
+    <span class="attr">data-profile</span>=<span class="str">"YOUR_PROFILE_HASH"</span>
+  <span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></pre>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="footer">
+      <a href="https://tapin-bay.vercel.app">LockedIn</a>
+    </div>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      var pre = btn.parentElement.querySelector('pre');
+      var text = pre.textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

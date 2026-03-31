@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#06060c" />
+  <title>NFC Setup — LockedIn</title>
+  <meta name="description" content="Turn any NFC sticker into your LockedIn card. Write your URL, tap to share." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #06060c;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #fff;
+      --sub: rgba(255,255,255,0.5);
+      --accent: #ff2d78;
+      --accent2: #ff6b35;
+      --glass: rgba(255,255,255,0.06);
+      --glass-border: rgba(255,255,255,0.1);
+      --radius: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Layout */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    section {
+      padding: 80px 0;
+    }
+
+    /* Glass card */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 20px 80px;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(255,45,120,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255,45,120,0.15), rgba(255,107,53,0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+      border: 1px solid rgba(255,45,120,0.2);
+    }
+
+    .hero h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(40px, 8vw, 64px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: clamp(16px, 3vw, 20px);
+      color: var(--sub);
+      max-width: 500px;
+    }
+
+    /* Section titles */
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      color: var(--sub);
+      font-size: 16px;
+      margin-bottom: 40px;
+      max-width: 600px;
+    }
+
+    /* Steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .step-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .step-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 20px;
+      margin: 0 auto 20px;
+    }
+
+    .step-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .step-card p {
+      font-size: 14px;
+      color: var(--sub);
+      line-height: 1.5;
+    }
+
+    .step-card a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .step-card a:hover { text-decoration: underline; }
+
+    /* NFC Write section */
+    .nfc-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .nfc-input-group input {
+      flex: 1;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .nfc-input-group input::placeholder { color: rgba(255,255,255,0.25); }
+    .nfc-input-group input:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 16px 28px;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,45,120,0.3); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .support-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px;
+      background: rgba(255,45,120,0.06);
+      border: 1px solid rgba(255,45,120,0.15);
+      border-radius: 14px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--sub);
+      line-height: 1.6;
+    }
+
+    .support-note svg { flex-shrink: 0; margin-top: 2px; }
+
+    .status-msg {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-msg.success {
+      display: flex;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: #22c55e;
+    }
+    .status-msg.error {
+      display: flex;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #ef4444;
+    }
+    .status-msg.info {
+      display: flex;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: #3b82f6;
+    }
+
+    @keyframes checkmark {
+      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+      50% { transform: scale(1.2) rotate(-45deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .check-anim svg { animation: checkmark 0.5s ease forwards; }
+
+    .fallback-instructions {
+      margin-top: 24px;
+      padding: 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .fallback-instructions h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .fallback-instructions ol {
+      padding-left: 20px;
+      color: var(--sub);
+      font-size: 14px;
+    }
+    .fallback-instructions ol li { margin-bottom: 8px; }
+    .fallback-instructions ol li strong { color: var(--text); }
+
+    /* Tags grid */
+    .tags-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .tag-card {
+      padding: 24px;
+    }
+
+    .tag-card .tag-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .tag-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .tag-card .tag-price {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .tag-card .tag-note {
+      font-size: 12px;
+      color: var(--sub);
+      margin-top: 4px;
+    }
+
+    .amazon-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: gap 0.3s;
+    }
+    .amazon-link:hover { gap: 12px; }
+
+    /* Apple Wallet */
+    .wallet-mockup {
+      max-width: 340px;
+      margin: 0 auto 32px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #1a1028, #0d0b18 40%, #06060c);
+      border: 1px solid var(--glass-border);
+      padding: 0;
+    }
+
+    .wallet-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wallet-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wallet-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wallet-brand {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .wallet-body {
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .wallet-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .wallet-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .wallet-handle {
+      font-size: 13px;
+      color: var(--sub);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .wallet-qr {
+      width: 100px;
+      height: 100px;
+      margin: 24px auto 0;
+      background: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .wallet-qr-pattern {
+      width: 80px;
+      height: 80px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .wallet-qr-pattern span {
+      background: #06060c;
+      border-radius: 1px;
+    }
+    .wallet-qr-pattern span.empty { background: transparent; }
+
+    .wallet-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .coming-soon-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+    }
+
+    .notify-row {
+      display: flex;
+      gap: 12px;
+      max-width: 400px;
+      margin: 24px auto 0;
+    }
+
+    .notify-row input {
+      flex: 1;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .notify-row input::placeholder { color: rgba(255,255,255,0.25); }
+    .notify-row input:focus { border-color: var(--accent); }
+
+    .notify-row .btn {
+      padding: 14px 24px;
+      font-size: 14px;
+    }
+
+    .wallet-explain {
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+      font-size: 14px;
+      color: var(--sub);
+      line-height: 1.7;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 20px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover { text-decoration: underline; }
+
+    footer p {
+      font-size: 14px;
+      color: var(--sub);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .steps-grid { grid-template-columns: 1fr; gap: 12px; }
+      .tags-grid { grid-template-columns: 1fr; }
+      .nfc-input-group { flex-direction: column; }
+      .btn-row { flex-direction: column; }
+      .btn-row .btn { width: 100%; text-align: center; }
+      section { padding: 60px 0; }
+      .glass { padding: 24px; }
+      .notify-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#ff2d78" stroke-width="1.5" fill="none"/>
+        <path d="M8 12c0-2.21 1.79-4 4-4" stroke="#ff2d78" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M6 12c0-3.31 2.69-6 6-6" stroke="#ff6b35" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M4 12c0-4.42 3.58-8 8-8" stroke="#ff2d78" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="12" cy="12" r="2" fill="#ff2d78"/>
+      </svg>
+    </div>
+    <h1>NFC Setup</h1>
+    <p>Turn any NFC sticker into your LockedIn card</p>
+  </section>
+
+  <!-- How It Works -->
+  <section class="container reveal">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Three steps. That's it.</div>
+    <div class="steps-grid">
+      <div class="step-card glass">
+        <div class="step-number">1</div>
+        <h3>Create your card</h3>
+        <p>Build your LockedIn card with all your links, actions, and contact info. <a href="/">Create one now</a></p>
+      </div>
+      <div class="step-card glass">
+        <div class="step-number">2</div>
+        <h3>Write to NFC tag</h3>
+        <p>Use the tool below to write your LockedIn URL to any NFC sticker or card.</p>
+      </div>
+      <div class="step-card glass">
+        <div class="step-number">3</div>
+        <h3>Tap to share</h3>
+        <p>Anyone who taps your NFC tag with their phone gets your card instantly. No app needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Write Your NFC Tag -->
+  <section class="container reveal">
+    <div class="section-label">Interactive</div>
+    <div class="section-title">Write Your NFC Tag</div>
+    <div class="section-sub">Paste your LockedIn URL and tap the button while holding your phone to an NFC tag.</div>
+
+    <div class="glass">
+      <div class="nfc-input-group">
+        <input type="url" id="nfc-url" placeholder="https://tapin-bay.vercel.app/?d=..." />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-write" onclick="writeNfc()">
+          <span style="display:inline-flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Write to NFC Tag
+          </span>
+        </button>
+        <button class="btn btn-secondary" id="btn-read" onclick="readNfc()">
+          <span style="display:inline-flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+            Test Read
+          </span>
+        </button>
+      </div>
+
+      <div class="status-msg" id="status"></div>
+
+      <div class="support-note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#ff2d78" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="#ff2d78" stroke-width="2" stroke-linecap="round"/></svg>
+        <span><strong style="color:var(--text)">Browser support:</strong> Web NFC works on <strong style="color:var(--text)">Chrome for Android</strong> only. iOS users — use the free <strong style="color:var(--text)">NFC Tools</strong> app (instructions below).</span>
+      </div>
+
+      <div class="fallback-instructions">
+        <h4>Using the NFC Tools app (iOS + Android)</h4>
+        <ol>
+          <li>Download <strong>NFC Tools</strong> — free on <a href="https://apps.apple.com/app/nfc-tools/id1252962749" target="_blank" rel="noopener" style="color:var(--accent)">App Store</a> or <a href="https://play.google.com/store/apps/details?id=com.wakdev.wdnfc" target="_blank" rel="noopener" style="color:var(--accent)">Google Play</a></li>
+          <li>Open the app and tap <strong>Write</strong></li>
+          <li>Tap <strong>Add a record</strong> &rarr; choose <strong>URL / URI</strong></li>
+          <li>Paste your LockedIn URL into the field</li>
+          <li>Tap <strong>Write</strong> and hold your phone to the NFC tag</li>
+          <li>Done — anyone who taps the tag will see your card</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where to Buy -->
+  <section class="container reveal">
+    <div class="section-label">Get Tags</div>
+    <div class="section-title">Where to Buy NFC Tags</div>
+    <div class="section-sub">Any NTAG215 (or higher) tag works. Here are the most popular options.</div>
+
+    <div class="tags-grid">
+      <div class="tag-card glass">
+        <div class="tag-icon">&#x1F4CB;</div>
+        <h3>NFC Stickers</h3>
+        <div class="tag-price">~$0.50 each</div>
+        <div class="tag-note">NTAG215, bulk packs on Amazon. Stick on phone, laptop, badge.</div>
+      </div>
+      <div class="tag-card glass">
+        <div class="tag-icon">&#x1F4C7;</div>
+        <h3>NFC Business Cards</h3>
+        <div class="tag-price">$2 — $5 each</div>
+        <div class="tag-note">PVC or metal. Professional feel. Hand them out.</div>
+      </div>
+      <div class="tag-card glass">
+        <div class="tag-icon">&#x1F511;</div>
+        <h3>NFC Keychains</h3>
+        <div class="tag-price">$1 — $3 each</div>
+        <div class="tag-note">Epoxy keychains. Always on you, always ready.</div>
+      </div>
+      <div class="tag-card glass">
+        <div class="tag-icon">&#x231A;</div>
+        <h3>NFC Wristbands</h3>
+        <div class="tag-price">$2 — $4 each</div>
+        <div class="tag-note">Silicone bands. Great for events and conferences.</div>
+      </div>
+    </div>
+
+    <a class="amazon-link" href="https://www.amazon.com/s?k=NTAG215+NFC+stickers" target="_blank" rel="noopener">
+      Browse NTAG215 tags on Amazon
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+
+  <!-- Apple Wallet -->
+  <section class="container reveal" style="text-align:center;">
+    <div class="coming-soon-badge">Coming Soon</div>
+    <div class="section-title" style="margin-bottom:8px;">Apple Wallet Pass</div>
+    <div class="section-sub" style="margin:0 auto 40px;">Your LockedIn card as an Apple Wallet pass. Always in your phone. Tap to share via NFC.</div>
+
+    <div class="wallet-mockup">
+      <div class="wallet-header">
+        <div class="wallet-header-left">
+          <div class="wallet-logo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="wallet-brand">LockedIn</span>
+        </div>
+      </div>
+      <div class="wallet-body">
+        <div class="wallet-avatar">J</div>
+        <div class="wallet-name">Your Name</div>
+        <div class="wallet-handle">@handle</div>
+        <div class="wallet-qr">
+          <div class="wallet-qr-pattern" id="qr-pattern"></div>
+        </div>
+      </div>
+      <div class="wallet-footer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        Tap to share
+      </div>
+    </div>
+
+    <div class="notify-row">
+      <input type="email" placeholder="your@email.com" />
+      <button class="btn btn-primary">Notify Me</button>
+    </div>
+
+    <p class="wallet-explain" style="margin-top:20px;">Add your LockedIn card to Apple Wallet. Works with NFC-enabled iPhones — hold your phone near any compatible reader to share your info instantly.</p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>Powered by <a href="/">LockedIn</a></p>
+  </footer>
+
+  <script>
+    // Auto-fill URL from query params
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var url = params.get('url');
+      if (url) {
+        document.getElementById('nfc-url').value = decodeURIComponent(url);
+      }
+    })();
+
+    // Generate fake QR pattern
+    (function() {
+      var container = document.getElementById('qr-pattern');
+      // Seed pattern for visual effect (not a real QR code)
+      var pattern = [
+        1,1,1,0,1,1,1,
+        1,0,1,1,1,0,1,
+        1,1,1,0,1,1,1,
+        0,1,0,1,0,1,0,
+        1,1,1,0,1,1,1,
+        1,0,1,1,1,0,1,
+        1,1,1,0,1,1,1
+      ];
+      for (var i = 0; i < pattern.length; i++) {
+        var span = document.createElement('span');
+        if (!pattern[i]) span.classList.add('empty');
+        container.appendChild(span);
+      }
+    })();
+
+    function showStatus(type, html) {
+      var el = document.getElementById('status');
+      el.className = 'status-msg ' + type;
+      el.innerHTML = html;
+    }
+
+    function hideStatus() {
+      var el = document.getElementById('status');
+      el.className = 'status-msg';
+      el.style.display = 'none';
+    }
+
+    // NFC Write
+    async function writeNfc() {
+      var url = document.getElementById('nfc-url').value.trim();
+      if (!url) {
+        showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Please paste your LockedIn URL first.');
+        return;
+      }
+
+      if (!('NDEFReader' in window)) {
+        showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Web NFC is not supported on this browser. Use the <strong>NFC Tools</strong> app instead (see instructions above).');
+        return;
+      }
+
+      try {
+        showStatus('info', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Hold your phone to the NFC tag...');
+        var ndef = new NDEFReader();
+        await ndef.write({ records: [{ recordType: "url", data: url }] });
+        showStatus('success', '<span class="check-anim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> NFC tag written successfully! Your LockedIn card is ready to share.');
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          hideStatus();
+        } else {
+          showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Write failed: ' + err.message + '. Try the <strong>NFC Tools</strong> app instead.');
+        }
+      }
+    }
+
+    // NFC Read
+    async function readNfc() {
+      if (!('NDEFReader' in window)) {
+        showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Web NFC is not supported on this browser. Use the <strong>NFC Tools</strong> app to read tags.');
+        return;
+      }
+
+      try {
+        showStatus('info', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Hold your phone to an NFC tag to read it...');
+        var ndef = new NDEFReader();
+        await ndef.scan();
+        ndef.onreading = function(event) {
+          var records = [];
+          for (var i = 0; i < event.message.records.length; i++) {
+            var record = event.message.records[i];
+            if (record.recordType === 'url') {
+              var decoder = new TextDecoder();
+              records.push(decoder.decode(record.data));
+            } else if (record.recordType === 'text') {
+              var decoder2 = new TextDecoder(record.encoding || 'utf-8');
+              records.push(decoder2.decode(record.data));
+            }
+          }
+          if (records.length > 0) {
+            showStatus('success', '<span class="check-anim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Found: <strong style="word-break:break-all;">' + records.join(', ') + '</strong>');
+          } else {
+            showStatus('info', 'Tag read, but no URL or text records found. This tag may be empty or use a different format.');
+          }
+        };
+        ndef.onreadingerror = function() {
+          showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Could not read the NFC tag. Make sure the tag is compatible.');
+        };
+      } catch (err) {
+        showStatus('error', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read failed: ' + err.message);
+      }
+    }
+
+    // Scroll reveal with IntersectionObserver
+    (function() {
+      var reveals = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        reveals.forEach(function(el) { observer.observe(el); });
+      } else {
+        reveals.forEach(function(el) { el.classList.add('visible'); });
+      }
+    })();
+  </script>
+
+</body>
+</html>
