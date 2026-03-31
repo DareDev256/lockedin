@@ -3,15 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0a0a12" />
+    <meta name="theme-color" content="#06060c" />
+
+    <!-- SEO -->
     <title>LockedIn — One-Tap Connection Card</title>
+    <meta name="description" content="Not a link page. An action router. One tap to follow everywhere, save contacts, send DMs, book meetings, or get paid." />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="LockedIn — One-Tap Connection Card" />
+    <meta property="og:description" content="Follow, Connect, DM, Book, Pay — all from one link. The future of networking." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tapin-bay.vercel.app" />
+    <meta property="og:image" content="https://tapin-bay.vercel.app/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LockedIn — One-Tap Connection Card" />
+    <meta name="twitter:description" content="Follow, Connect, DM, Book, Pay — all from one link." />
+    <meta name="twitter:image" content="https://tapin-bay.vercel.app/og-image.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LockedIn" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #0a0a12; overflow-x: hidden; }
+      body { background: #06060c; overflow-x: hidden; }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>
