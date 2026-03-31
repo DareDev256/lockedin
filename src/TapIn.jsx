@@ -319,27 +319,14 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
 
     // Default auto embeds
     switch (platform) {
-      case "twitter": {
-        // Use a unique key to force React to preserve the DOM for Twitter widget
-        const tRef = `tw-${handle}`;
-        return <div key={tRef} style={{ width: "100%", minHeight: 350, borderRadius: 8, overflow: "hidden", background: "rgba(0,0,0,0.15)" }}>
-          <div id={tRef} ref={(el) => {
-            if (el && !el.dataset.rendered && window.twttr?.widgets) {
-              el.dataset.rendered = "1";
-              el.innerHTML = "";
-              window.twttr.widgets.createTimeline(
-                { sourceType: "profile", screenName: handle },
-                el,
-                { height: 380, chrome: "noheader nofooter transparent", theme: "dark", dnt: true, tweetLimit: 5 }
-              );
-            }
-          }} style={{ minHeight: 350 }}>
-            <div style={{ padding: 20, color: "rgba(255,255,255,0.3)", fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
-              <a href={`https://twitter.com/${handle}`} target="_blank" rel="noopener noreferrer" style={{ color: t.accent, textDecoration: "none", fontWeight: 600 }}>View @{handle} on X &rarr;</a>
-            </div>
-          </div>
+      case "twitter":
+        return <div style={{ width: "100%", minHeight: 400, borderRadius: 8, overflow: "hidden" }}>
+          <iframe
+            src={`https://platform.twitter.com/embed/Timeline.html?dnt=true&embedId=tw-${handle}&hideCard=false&hideBorder=true&hideFooter=true&hideHeader=false&hideScrollBar=false&lang=en&screenName=${handle}&showHeader=true&showReplies=false&theme=dark&transparent=true`}
+            style={{ width: "100%", height: 400, border: "none", borderRadius: 8 }}
+            title={`@${handle} on X`}
+          />
         </div>;
-      }
       case "youtube": {
         // If handle looks like a video ID (11 chars, no @ or /), embed that video directly
         const isVideoId = /^[a-zA-Z0-9_-]{11}$/.test(handle);
