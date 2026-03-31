@@ -327,7 +327,10 @@ export default function LockedIn() {
   const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
-    setShareUrl(window.location.href);
+    const url = window.location.hostname === "localhost"
+      ? "https://tapin-bay.vercel.app"
+      : window.location.href;
+    setShareUrl(url);
     // Load Twitter widget script
     const s = document.createElement("script");
     s.src = "https://platform.twitter.com/widgets.js";
@@ -387,7 +390,11 @@ export default function LockedIn() {
     setTimeout(() => setContactSaved(false), 3000);
   }, [profile]);
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${QR_SIZE}x${QR_SIZE}&data=${encodeURIComponent(shareUrl)}&bgcolor=0a0a12&color=ffffff&format=svg`;
+  // Use the canonical deployed URL for the QR, not localhost
+  const canonicalUrl = window.location.hostname === "localhost"
+    ? "https://tapin-bay.vercel.app"
+    : window.location.href;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${QR_SIZE}x${QR_SIZE}&data=${encodeURIComponent(canonicalUrl)}&bgcolor=0a0a12&color=ffffff&format=svg`;
 
   const availableModes = ACTION_MODES.filter((m) => {
     if (m.id === "follow") return activeSocials.length > 0;
