@@ -325,6 +325,16 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
           <span style={{ color: t.text, fontSize: 15, fontWeight: 700 }}>@{handle.replace(/^@/, "")}</span>
           <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", background: t.accent, borderRadius: 20, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" }}>Follow on X</a>
         </div>;
+      case "instagram":
+        return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: "24px 16px" }}>
+          <img src={`https://unavatar.io/instagram/${handle}`} alt={handle} style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: `3px solid ${config.color}` }} onError={(e) => { e.target.style.display = "none"; }} />
+          <span style={{ color: t.text, fontSize: 15, fontWeight: 700 }}>@{handle}</span>
+          <div style={{ display: "flex", gap: 24, color: t.sub, fontSize: 12 }}>
+            <span style={{ textAlign: "center" }}><strong style={{ color: t.text, fontSize: 16, display: "block" }}>&mdash;</strong>Posts</span>
+            <span style={{ textAlign: "center" }}><strong style={{ color: t.text, fontSize: 16, display: "block" }}>&mdash;</strong>Followers</span>
+          </div>
+          <a href={`https://instagram.com/${handle}`} target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", background: "linear-gradient(135deg, #833AB4, #E1306C, #F77737)", borderRadius: 20, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>Follow on Instagram</a>
+        </div>;
       case "youtube": {
         // If handle looks like a video ID (11 chars, no @ or /), embed that video directly
         const isVideoId = /^[a-zA-Z0-9_-]{11}$/.test(handle);
