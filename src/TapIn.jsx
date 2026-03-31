@@ -276,14 +276,33 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
       );
     }
     if (feedType === "video_thumbnail" && fc.videoUrl) {
+      // Auto-extract YouTube thumbnail from video URL
+      let thumbUrl = fc.thumbnailUrl;
+      if (!thumbUrl) {
+        const ytMatch = fc.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+        if (ytMatch) thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+      }
+      // If it's a YouTube URL, embed the video directly instead of just a thumbnail
+      const ytId = fc.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+      if (ytId) {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ width: "100%", height: 280, borderRadius: 8, overflow: "hidden" }}>
+              <iframe src={`https://www.youtube.com/embed/${ytId[1]}`} style={{ width: "100%", height: "100%", border: "none", borderRadius: 8 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="YouTube Video" />
+            </div>
+            {fc.caption && <p style={{ fontSize: 12, color: t.sub, textAlign: "center", fontWeight: 600 }}>{fc.caption}</p>}
+          </div>
+        );
+      }
       return (
         <a href={fc.videoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", position: "relative" }}>
-          <img src={fc.thumbnailUrl || fc.videoUrl} alt="Video" style={{ width: "100%", borderRadius: 8, maxHeight: 300, objectFit: "cover" }} />
+          <img src={thumbUrl || fc.videoUrl} alt="Video" style={{ width: "100%", borderRadius: 8, maxHeight: 300, objectFit: "cover" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
             </div>
           </div>
+          {fc.caption && <p style={{ fontSize: 12, color: t.sub, textAlign: "center", marginTop: 8, fontWeight: 600 }}>{fc.caption}</p>}
         </a>
       );
     }
@@ -303,8 +322,12 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
       case "twitter":
         return <div style={{ width: "100%", minHeight: 300, borderRadius: 8, overflow: "hidden", background: "rgba(0,0,0,0.3)" }}><a className="twitter-timeline" data-theme="dark" data-chrome="noheader nofooter transparent" data-tweet-limit="5" href={`https://twitter.com/${handle}`}>Loading...</a></div>;
       case "youtube": {
-        const ch = handle.startsWith("@") ? handle.slice(1) : handle;
-        return <div style={{ width: "100%", height: 300, borderRadius: 8, overflow: "hidden" }}><iframe src={`https://www.youtube.com/embed?listType=user_uploads&list=${ch}`} style={{ width: "100%", height: "100%", border: "none", borderRadius: 8 }} title="YouTube" /></div>;
+        // If handle looks like a video ID (11 chars, no @ or /), embed that video directly
+        const isVideoId = /^[a-zA-Z0-9_-]{11}$/.test(handle);
+        const embedUrl = isVideoId
+          ? `https://www.youtube.com/embed/${handle}`
+          : `https://www.youtube.com/embed?listType=user_uploads&list=${handle.replace(/^@/, "")}`;
+        return <div style={{ width: "100%", height: 300, borderRadius: 8, overflow: "hidden" }}><iframe src={embedUrl} style={{ width: "100%", height: "100%", border: "none", borderRadius: 8 }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen title="YouTube" /></div>;
       }
       case "github":
         return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
@@ -423,7 +446,7 @@ function LandingPage({ onCreateCard, onViewDemo }) {
 // ─── EMPTY PROFILE ──────────────────────────────────────────────────
 const EMPTY_PROFILE = { name: "", handle: "", bio: "", theme: "midnight", email: "", phone: "", socials: {}, customLinks: [], feedConfig: {} };
 
-const DEMO_PROFILE = { name: "James Dare", handle: "@DareDev256", bio: "AI Software Developer \u2022 Creative Director \u2022 TdotsSolutionsz", theme: "midnight", email: "", phone: "", socials: { twitter: "TdotsSolutionsz", youtube: "@PassionOS", instagram: "TdotsSolutionsz", github: "DareDev256", website: "www.jamesdare.com" }, customLinks: [], feedConfig: {} };
+const DEMO_PROFILE = { name: "James Dare", handle: "@DareDev256", bio: "AI Software Developer \u2022 Creative Director \u2022 TdotsSolutionsz", theme: "midnight", email: "", phone: "", socials: { twitter: "TdotsSolutionsz", youtube: "@PassionOS", instagram: "TdotsSolutionsz", github: "DareDev256", linkedin: "james-olusoga", website: "www.jamesdare.com" }, customLinks: [{ label: "LockedIn", url: "https://tapin-bay.vercel.app", desc: "One-tap connection card" }], feedConfig: { youtube: { showInFeed: true, showInCard: true, type: "video_thumbnail", videoUrl: "https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID", caption: "Sahbabii - Anime World AMV" }, twitter: { showInFeed: true, showInCard: true, type: "auto" }, github: { showInFeed: true, showInCard: true, type: "auto" } } };
 
 const QR_SIZE = 140;
 const BASE_URL = "https://tapin-bay.vercel.app";
@@ -458,16 +481,28 @@ export default function LockedIn() {
 
   useEffect(() => {
     if (page === "card") {
-      const s = document.createElement("script");
-      s.src = "https://platform.twitter.com/widgets.js";
-      s.async = true;
-      document.body.appendChild(s);
+      // Load Twitter widget script
+      if (!document.querySelector('script[src*="platform.twitter.com"]')) {
+        const s = document.createElement("script");
+        s.src = "https://platform.twitter.com/widgets.js";
+        s.async = true;
+        s.charset = "utf-8";
+        document.head.appendChild(s);
+      }
+      // Re-render Twitter embeds once script loads
+      const interval = setInterval(() => {
+        if (window.twttr?.widgets) {
+          window.twttr.widgets.load();
+          clearInterval(interval);
+        }
+      }, 500);
+      return () => clearInterval(interval);
     }
   }, [page]);
 
   useEffect(() => {
     if (activeFeed === "twitter" && window.twttr?.widgets) {
-      setTimeout(() => window.twttr.widgets.load(), 300);
+      setTimeout(() => window.twttr.widgets.load(), 200);
     }
   }, [activeFeed]);
 
