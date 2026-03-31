@@ -320,7 +320,14 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
     // Default auto embeds
     switch (platform) {
       case "twitter":
-        return <div style={{ width: "100%", minHeight: 300, borderRadius: 8, overflow: "hidden", background: "rgba(0,0,0,0.3)" }}><a className="twitter-timeline" data-theme="dark" data-chrome="noheader nofooter transparent" data-tweet-limit="5" href={`https://twitter.com/${handle}`}>Loading...</a></div>;
+        return <div style={{ width: "100%", minHeight: 350, borderRadius: 8, overflow: "hidden", background: "rgba(0,0,0,0.2)" }}>
+          <iframe
+            src={`https://syndication.twitter.com/srv/timeline-profile/screen-name/${handle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=true&hideHeader=true&hideScrollBar=false&lang=en&theme=dark&transparent=true`}
+            style={{ width: "100%", height: 350, border: "none", borderRadius: 8, colorScheme: "dark" }}
+            sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
+            title={`@${handle} on X`}
+          />
+        </div>;
       case "youtube": {
         // If handle looks like a video ID (11 chars, no @ or /), embed that video directly
         const isVideoId = /^[a-zA-Z0-9_-]{11}$/.test(handle);
@@ -446,7 +453,7 @@ function LandingPage({ onCreateCard, onViewDemo }) {
 // ─── EMPTY PROFILE ──────────────────────────────────────────────────
 const EMPTY_PROFILE = { name: "", handle: "", bio: "", theme: "midnight", email: "", phone: "", socials: {}, customLinks: [], feedConfig: {} };
 
-const DEMO_PROFILE = { name: "James Dare", handle: "@DareDev256", bio: "AI Software Developer \u2022 Creative Director \u2022 TdotsSolutionsz", theme: "midnight", email: "", phone: "", socials: { twitter: "TdotsSolutionsz", youtube: "@PassionOS", instagram: "TdotsSolutionsz", github: "DareDev256", linkedin: "james-olusoga", website: "www.jamesdare.com" }, customLinks: [{ label: "LockedIn", url: "https://tapin-bay.vercel.app", desc: "One-tap connection card" }], feedConfig: { youtube: { showInFeed: true, showInCard: true, type: "video_thumbnail", videoUrl: "https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID", caption: "Sahbabii - Anime World AMV" }, twitter: { showInFeed: true, showInCard: true, type: "auto" }, github: { showInFeed: true, showInCard: true, type: "auto" } } };
+const DEMO_PROFILE = { name: "James Dare", handle: "@DareDev256", bio: "AI Software Developer \u2022 Creative Director \u2022 TdotsSolutionsz", theme: "midnight", email: "", phone: "", socials: { twitter: "TdotsSolutionsz", youtube: "@PassionOS", instagram: "TdotsSolutionsz", github: "DareDev256", linkedin: "james-olusoga", website: "www.jamesdare.com" }, customLinks: [{ label: "LockedIn", url: "https://tapin-bay.vercel.app", desc: "One-tap connection card" }], feedConfig: { youtube: { showInFeed: true, showInCard: true, type: "video_thumbnail", videoUrl: "https://www.youtube.com/watch?v=jpjFR1leW9I", caption: "Sahbabii - Anime World AMV" }, twitter: { showInFeed: true, showInCard: true, type: "auto" }, github: { showInFeed: true, showInCard: true, type: "auto" } } };
 
 const QR_SIZE = 140;
 const BASE_URL = "https://tapin-bay.vercel.app";
