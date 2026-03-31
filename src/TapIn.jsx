@@ -320,12 +320,10 @@ function FeedPanel({ platform, handle, isActive, onClick, theme, feedConfig }) {
     // Default auto embeds
     switch (platform) {
       case "twitter":
-        return <div style={{ width: "100%", minHeight: 400, borderRadius: 8, overflow: "hidden" }}>
-          <iframe
-            src={`https://platform.twitter.com/embed/Timeline.html?dnt=true&embedId=tw-${handle}&hideCard=false&hideBorder=true&hideFooter=true&hideHeader=false&hideScrollBar=false&lang=en&screenName=${handle}&showHeader=true&showReplies=false&theme=dark&transparent=true`}
-            style={{ width: "100%", height: 400, border: "none", borderRadius: 8 }}
-            title={`@${handle} on X`}
-          />
+        return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, padding: "24px 16px" }}>
+          <div style={{ width: 64, height: 64, borderRadius: 16, background: `${config.color}10`, display: "flex", alignItems: "center", justifyContent: "center", color: config.color }}>{config.icon}</div>
+          <span style={{ color: t.text, fontSize: 15, fontWeight: 700 }}>@{handle.replace(/^@/, "")}</span>
+          <a href={`https://x.com/${handle}`} target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", background: t.accent, borderRadius: 20, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" }}>Follow on X</a>
         </div>;
       case "youtube": {
         // If handle looks like a video ID (11 chars, no @ or /), embed that video directly
