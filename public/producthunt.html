@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LockedIn - Coming to Product Hunt</title>
+  <meta name="description" content="The open-source Linktree killer with action routing. Follow All, Connect, DM, Book, Pay — not just links." />
+  <meta property="og:title" content="LockedIn - Coming to Product Hunt" />
+  <meta property="og:description" content="The open-source Linktree killer with action routing." />
+  <meta property="og:image" content="/og-image.png" />
+  <link rel="icon" type="image/png" href="/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(145deg, #06060c 0%, #0d0b18 40%, #0a0812 100%);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    a { color: #ff2d78; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Animations */
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 30px rgba(255,45,120,0.3); } 50% { box-shadow: 0 0 60px rgba(255,45,120,0.5); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 60px;
+      text-align: center;
+    }
+    .logo-wrap {
+      animation: float 4s ease-in-out infinite;
+      margin-bottom: 24px;
+    }
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: rgba(255,45,120,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -2px;
+    }
+    .ph-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: rgba(218,85,47,0.12);
+      border: 1px solid rgba(218,85,47,0.25);
+      border-radius: 50px;
+      margin-bottom: 32px;
+      animation: slideUp 0.6s ease-out 0.2s backwards;
+    }
+    .ph-cat {
+      width: 36px;
+      height: 36px;
+      animation: bounce 3s ease-in-out infinite;
+    }
+    .ph-badge span {
+      font-weight: 700;
+      font-size: 15px;
+      color: #DA5527;
+    }
+    .tagline {
+      font-size: 26px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.5;
+      max-width: 600px;
+      margin-bottom: 12px;
+      animation: slideUp 0.6s ease-out 0.3s backwards;
+    }
+    .tagline strong {
+      color: #ff2d78;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 40px;
+      animation: slideUp 0.6s ease-out 0.4s backwards;
+    }
+
+    /* Feature Cards */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 28px 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s;
+      animation: slideUp 0.6s ease-out backwards;
+    }
+    .feature-card:nth-child(1) { animation-delay: 0.3s; }
+    .feature-card:nth-child(2) { animation-delay: 0.4s; }
+    .feature-card:nth-child(3) { animation-delay: 0.5s; }
+    .feature-card:nth-child(4) { animation-delay: 0.6s; }
+    .feature-card:nth-child(5) { animation-delay: 0.7s; }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,45,120,0.3);
+      background: rgba(255,255,255,0.05);
+    }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255,45,120,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.6;
+    }
+
+    /* Social Proof */
+    .social-proof {
+      text-align: center;
+      padding: 40px 20px 60px;
+      animation: slideUp 0.6s ease-out 0.8s backwards;
+    }
+    .social-proof blockquote {
+      font-size: 18px;
+      color: rgba(255,255,255,0.6);
+      font-style: italic;
+      max-width: 500px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .badges img {
+      height: 28px;
+      border-radius: 4px;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      text-align: center;
+      padding: 40px 20px 80px;
+      animation: slideUp 0.6s ease-out 1s backwards;
+    }
+    .cta-section h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 24px;
+    }
+    .email-form {
+      display: flex;
+      gap: 10px;
+      max-width: 420px;
+      margin: 0 auto 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .email-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .email-input:focus {
+      border-color: #ff2d78;
+    }
+    .email-input::placeholder {
+      color: rgba(255,255,255,0.3);
+    }
+    .notify-btn {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #ff2d78, #ff6b35);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      animation: glow 3s ease-in-out infinite;
+    }
+    .notify-btn:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+    .cta-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .cta-btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+      text-decoration: none;
+    }
+    .cta-btn.primary {
+      background: rgba(255,45,120,0.12);
+      border: 1px solid rgba(255,45,120,0.3);
+      color: #ff2d78;
+    }
+    .cta-btn.github {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .footer-links a {
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: #ff2d78;
+      text-decoration: none;
+    }
+    .footer-credit {
+      font-size: 12px;
+      color: rgba(255,255,255,0.15);
+      font-family: 'Space Mono', monospace;
+    }
+
+    @media (max-width: 600px) {
+      .logo-text { font-size: 38px; }
+      .tagline { font-size: 20px; }
+      .features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#ff2d78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">LockedIn</div>
+    </div>
+
+    <div class="ph-badge">
+      <svg class="ph-cat" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" fill="#DA5527"/>
+        <path d="M10 12 L14 6 L18 12Z" fill="#fff"/>
+        <path d="M22 12 L26 6 L30 12Z" fill="#fff"/>
+        <circle cx="15" cy="18" r="2.5" fill="#fff"/>
+        <circle cx="25" cy="18" r="2.5" fill="#fff"/>
+        <circle cx="15" cy="18" r="1.2" fill="#DA5527"/>
+        <circle cx="25" cy="18" r="1.2" fill="#DA5527"/>
+        <ellipse cx="20" cy="23" rx="2" ry="1.5" fill="#fff"/>
+        <line x1="8" y1="20" x2="13" y2="19" stroke="#fff" stroke-width="0.8"/>
+        <line x1="8" y1="22" x2="13" y2="21" stroke="#fff" stroke-width="0.8"/>
+        <line x1="27" y1="19" x2="32" y2="20" stroke="#fff" stroke-width="0.8"/>
+        <line x1="27" y1="21" x2="32" y2="22" stroke="#fff" stroke-width="0.8"/>
+      </svg>
+      <span>Coming to Product Hunt</span>
+    </div>
+
+    <p class="tagline">
+      The open-source <strong>Linktree killer</strong> with action routing
+    </p>
+    <p class="subtitle">Follow, Connect, DM, Book, Pay — not just links</p>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff2d78" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+      </div>
+      <h3>Follow All</h3>
+      <p>One tap opens every platform and chains follow actions. Your audience follows you everywhere in seconds.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <h3>Action Routing</h3>
+      <p>Follow, Connect, DM, Book, Pay — visitors choose their action. Not just links, actual workflows.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </div>
+      <h3>60+ Platforms</h3>
+      <p>From GitHub to OnlyFans, Spotify to Cash App — every platform in one card with native deep links.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00b4d8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1v4M12 19v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M1 12h4M19 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+      </div>
+      <h3>Open Source</h3>
+      <p>Fork it, self-host it, own your data. No vendor lock-in, no monthly fees, no limits.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1DB954" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6"/>
+          <rect x="4" y="2" width="16" height="20" rx="3"/>
+        </svg>
+      </div>
+      <h3>NFC Ready</h3>
+      <p>Write your LockedIn URL to any NFC sticker. Tap a phone to your card, sticker, or tag — instant connection.</p>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="social-proof">
+    <blockquote>"Built live at a Claude Code meetup. Deployed mid-presentation."</blockquote>
+    <div class="badges">
+      <a href="https://github.com/DareDev256/tapin" target="_blank" rel="noopener">
+        <img src="https://img.shields.io/github/stars/DareDev256/tapin?style=social" alt="GitHub Stars" />
+      </a>
+      <a href="https://github.com/DareDev256/tapin" target="_blank" rel="noopener">
+        <img src="https://img.shields.io/badge/license-ISC-blue" alt="License" />
+      </a>
+      <a href="https://github.com/DareDev256/tapin" target="_blank" rel="noopener">
+        <img src="https://img.shields.io/badge/platforms-60%2B-ff2d78" alt="60+ Platforms" />
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Get notified when we launch</h2>
+    <div class="email-form">
+      <input type="email" class="email-input" placeholder="your@email.com" aria-label="Email address" />
+      <button class="notify-btn" onclick="this.textContent='Coming soon!'; this.style.background='linear-gradient(135deg, #1DB954, #1ed760)';">Notify Me</button>
+    </div>
+    <div class="cta-buttons">
+      <a href="/" class="cta-btn primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Try it now
+      </a>
+      <a href="https://github.com/DareDev256/tapin" target="_blank" rel="noopener" class="cta-btn github">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="/">App</a>
+      <a href="https://github.com/DareDev256/tapin" target="_blank" rel="noopener">GitHub</a>
+      <a href="/nfc.html">NFC Setup</a>
+      <a href="/embed.html">Embed Docs</a>
+    </div>
+    <p class="footer-credit">Built by <a href="https://github.com/DareDev256" target="_blank" rel="noopener" style="color: rgba(255,255,255,0.3);">DareDev256</a></p>
+  </footer>
+
+</body>
+</html>

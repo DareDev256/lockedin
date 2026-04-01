@@ -183,6 +183,165 @@ const ACTION_MODES = [
 // ─── Feed Panel Content Types ──────────────────────────────────────
 const FEED_TYPES = { auto: "Auto Embed", image: "Image", video_thumbnail: "Video Thumbnail", text_card: "Text Card", custom_embed: "Custom Embed" };
 
+// ─── Analytics (localStorage) ─────────────────────────────────────
+function getAnalyticsKey(profile) {
+  const raw = (profile.name || "") + "|" + (profile.handle || "");
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
+  return `lockedin_analytics_${Math.abs(hash)}`;
+}
+
+function getAnalytics(profile) {
+  try { return JSON.parse(localStorage.getItem(getAnalyticsKey(profile)) || "[]"); } catch { return []; }
+}
+
+function trackEvent(profile, type, platform) {
+  try {
+    const key = getAnalyticsKey(profile);
+    const events = JSON.parse(localStorage.getItem(key) || "[]");
+    events.push({ type, platform: platform || null, timestamp: Date.now() });
+    // Keep max 10k events
+    if (events.length > 10000) events.splice(0, events.length - 10000);
+    localStorage.setItem(key, JSON.stringify(events));
+  } catch {}
+}
+
+function clearAnalytics(profile) {
+  localStorage.removeItem(getAnalyticsKey(profile));
+}
+
+function computeAnalytics(events) {
+  const now = Date.now();
+  const day = 86400000;
+  const views = events.filter(e => e.type === "view");
+  const clicks = events.filter(e => e.type !== "view");
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const dayStart = now - (6 - i) * day;
+    const dayEnd = dayStart + day;
+    return events.filter(e => e.timestamp >= dayStart && e.timestamp < dayEnd).length;
+  });
+  const platformClicks = {};
+  clicks.forEach(e => {
+    if (e.platform) platformClicks[e.platform] = (platformClicks[e.platform] || 0) + 1;
+  });
+  const followAllClicks = events.filter(e => e.type === "follow_all").length;
+  const contactSaves = events.filter(e => e.type === "contact_save").length;
+  const ctr = views.length > 0 ? ((clicks.length / views.length) * 100).toFixed(1) : "0.0";
+  return { totalViews: views.length, totalClicks: clicks.length, followAllClicks, contactSaves, platformClicks, last7, ctr };
+}
+
+// ─── Analytics Dashboard Component ───────────────────────────────
+function AnalyticsDashboard({ profile, theme }) {
+  const [stats, setStats] = useState(null);
+  const [animatedViews, setAnimatedViews] = useState(0);
+  const isMinimal = profile.theme === "minimal";
+  const accent = theme.accent;
+  const textColor = theme.text;
+  const subColor = theme.sub;
+
+  useEffect(() => {
+    const events = getAnalytics(profile);
+    setStats(computeAnalytics(events));
+  }, [profile]);
+
+  useEffect(() => {
+    if (!stats) return;
+    const target = stats.totalViews;
+    if (target === 0) { setAnimatedViews(0); return; }
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 30));
+    const interval = setInterval(() => {
+      current = Math.min(current + step, target);
+      setAnimatedViews(current);
+      if (current >= target) clearInterval(interval);
+    }, 30);
+    return () => clearInterval(interval);
+  }, [stats]);
+
+  if (!stats) return null;
+
+  const maxPlatformClicks = Math.max(1, ...Object.values(stats.platformClicks));
+  const maxSparkline = Math.max(1, ...stats.last7);
+
+  return (
+    <div>
+      <p style={{ fontSize: 12, color: subColor, marginBottom: 16 }}>Track how people interact with your card. Data is stored locally on this device.</p>
+      <p style={{ fontSize: 10, color: subColor, opacity: 0.5, marginBottom: 20, fontStyle: "italic" }}>Full analytics with cloud sync coming soon</p>
+
+      {/* Stat Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+        {[
+          { label: "Total Views", value: animatedViews, color: accent },
+          { label: "Click-through Rate", value: `${stats.ctr}%`, color: theme.accent2 },
+          { label: "Follow All Clicks", value: stats.followAllClicks, color: "#1DB954" },
+          { label: "Contact Saves", value: stats.contactSaves, color: "#64ffda" },
+        ].map((s, i) => (
+          <div key={i} style={{ background: `${s.color}08`, border: `1px solid ${s.color}20`, borderRadius: 14, padding: "16px 14px", textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: s.color, fontFamily: "'Space Mono', monospace", lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: subColor, marginTop: 6, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Last 7 Days Sparkline */}
+      <div style={{ background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 14, padding: "16px", marginBottom: 20 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: subColor, letterSpacing: 2, marginBottom: 12 }}>LAST 7 DAYS</p>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
+          {stats.last7.map((v, i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <div style={{ width: "100%", height: Math.max(4, (v / maxSparkline) * 40), background: `linear-gradient(to top, ${accent}, ${theme.accent2})`, borderRadius: 3, transition: "height 0.5s ease-out" }} />
+              <span style={{ fontSize: 8, color: subColor }}>{["M","T","W","T","F","S","S"][i]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Platform Clicks */}
+      {Object.keys(stats.platformClicks).length > 0 && (
+        <div style={{ background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 14, padding: "16px", marginBottom: 20 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: subColor, letterSpacing: 2, marginBottom: 12 }}>PLATFORM CLICKS</p>
+          {Object.entries(stats.platformClicks).sort((a, b) => b[1] - a[1]).map(([platform, count]) => {
+            const pc = PLATFORMS[platform];
+            const pct = (count / maxPlatformClicks) * 100;
+            return (
+              <div key={platform} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: `${pc?.color || accent}15`, display: "flex", alignItems: "center", justifyContent: "center", color: pc?.color || accent, flexShrink: 0 }}>{pc?.icon || null}</div>
+                <span style={{ fontSize: 11, color: textColor, fontWeight: 600, minWidth: 60 }}>{pc?.name || platform}</span>
+                <div style={{ flex: 1, height: 8, background: `${theme.border}`, borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${pc?.color || accent}, ${pc?.color || accent}88)`, borderRadius: 4, transition: "width 0.6s ease-out" }} />
+                </div>
+                <span style={{ fontSize: 11, color: subColor, fontFamily: "'Space Mono', monospace", minWidth: 28, textAlign: "right" }}>{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Clear Button */}
+      <button onClick={() => { clearAnalytics(profile); setStats(computeAnalytics([])); setAnimatedViews(0); }} style={{ width: "100%", padding: "10px", background: "rgba(255,60,60,0.08)", border: "1px solid rgba(255,60,60,0.2)", borderRadius: 10, color: "#ff3c3c", fontSize: 12, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}>
+        Clear Analytics
+      </button>
+    </div>
+  );
+}
+
+// ─── Viral CTA Banner ─────────────────────────────────────────────
+function ViralBanner({ theme, onDismiss }) {
+  const accent = theme.accent;
+  return (
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000, animation: "slideUpBanner 0.5s ease-out", padding: "0 16px 16px" }}>
+      <div style={{ maxWidth: 420, margin: "0 auto", background: "rgba(15,15,25,0.85)", backdropFilter: "blur(20px)", border: `1px solid ${accent}25`, borderRadius: 18, padding: "18px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ flex: 1 }}>
+          <p style={{ color: "#fff", fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Make your own LockedIn card</p>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>Free, 30 seconds</p>
+        </div>
+        <a href={`${typeof BASE_URL !== 'undefined' ? '' : '/'}#`} onClick={(e) => { e.preventDefault(); window.location.hash = ''; window.location.reload(); }} style={{ padding: "10px 20px", background: `linear-gradient(135deg, ${accent}, ${theme.accent2})`, border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", textDecoration: "none", whiteSpace: "nowrap" }}>Create Mine</a>
+        <button onClick={onDismiss} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 18, padding: "4px", lineHeight: 1 }}>x</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── URL Profile Encoding ───────────────────────────────────────────
 function encodeProfile(profile) {
   const data = {
@@ -477,7 +636,9 @@ export default function LockedIn() {
   const [contactSaved, setContactSaved] = useState(false);
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  const [editorTab, setEditorTab] = useState("platforms"); // platforms | feed | customlinks
+  const [editorTab, setEditorTab] = useState("platforms"); // platforms | feed | customlinks | analytics
+  const [showViralBanner, setShowViralBanner] = useState(false);
+  const [isOwnerViewing, setIsOwnerViewing] = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -487,6 +648,12 @@ export default function LockedIn() {
         setProfile(decoded);
         setPage("card");
         document.title = `${decoded.name} \u2014 LockedIn`;
+        // Track view
+        trackEvent(decoded, "view");
+        // Show viral banner after 3s (only once per session, not for owner)
+        if (!sessionStorage.getItem("lockedin_banner_dismissed")) {
+          setTimeout(() => setShowViralBanner(true), 3000);
+        }
         return;
       }
     }
@@ -541,10 +708,12 @@ export default function LockedIn() {
     if (!c) return;
     window.open(c.getFollowUrl ? c.getFollowUrl(handle) : c.getProfileUrl(handle), "_blank", "noopener");
     setFollowingState((p) => ({ ...p, [platform]: true }));
-  }, []);
+    trackEvent(profile, "follow", platform);
+  }, [profile]);
 
   const handleFollowAll = useCallback(() => {
     setFollowAllTriggered(true);
+    trackEvent(profile, "follow_all");
     const followable = activeSocials.filter(([p]) => !["cashapp", "venmo", "paypal", "bitcoin", "calendly", "calcom", "email"].includes(p));
     followable.forEach(([platform, handle], i) => {
       setTimeout(() => {
@@ -554,22 +723,26 @@ export default function LockedIn() {
         setFollowingState((p) => ({ ...p, [platform]: true }));
       }, i * 600);
     });
-  }, [activeSocials]);
+  }, [activeSocials, profile]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(shareUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
-  }, [shareUrl]);
+    trackEvent(profile, "copy_link");
+  }, [shareUrl, profile]);
 
   const handleSaveContact = useCallback(() => {
     downloadVCard(profile);
     setContactSaved(true);
     setTimeout(() => setContactSaved(false), 3000);
+    trackEvent(profile, "contact_save");
   }, [profile]);
 
   const generateShareLink = useCallback(() => {
     const url = `${BASE_URL}#${encodeProfile(profile)}`;
     window.history.replaceState(null, "", `#${encodeProfile(profile)}`);
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    setIsOwnerViewing(true);
+    setShowViralBanner(false);
   }, [profile]);
 
   // Filter socials for card display (excluding payment/booking which have their own modes)
@@ -639,6 +812,7 @@ export default function LockedIn() {
         .tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid ${theme.border}; background: transparent; color: ${subColor}; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .tab-btn.active { background: ${accent}18; border-color: ${accent}55; color: ${accent}; }
         .tab-btn:hover { border-color: ${accent}30; }
+        @keyframes slideUpBanner { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 900px) { .dashboard-layout { flex-direction: column !important; } .feed-sidebar { max-height: 50vh !important; width: 100% !important; min-width: unset !important; } .card-wrap { max-width: 100% !important; } }
       `}</style>
 
@@ -654,7 +828,7 @@ export default function LockedIn() {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {page === "card" && (
-              <button onClick={() => setPage("editor")} style={{ display: "flex", alignItems: "center", gap: 6, background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: 8, padding: "8px 14px", color: accent, fontSize: 13, fontFamily: "'Outfit', sans-serif", cursor: "pointer", fontWeight: 600 }}>
+              <button onClick={() => { setPage("editor"); setIsOwnerViewing(true); }} style={{ display: "flex", alignItems: "center", gap: 6, background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: 8, padding: "8px 14px", color: accent, fontSize: 13, fontFamily: "'Outfit', sans-serif", cursor: "pointer", fontWeight: 600 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                 Edit
               </button>
@@ -703,6 +877,10 @@ export default function LockedIn() {
                 <button className={`tab-btn ${editorTab === "platforms" ? "active" : ""}`} onClick={() => setEditorTab("platforms")}>Platforms</button>
                 <button className={`tab-btn ${editorTab === "feed" ? "active" : ""}`} onClick={() => setEditorTab("feed")}>Feed Config</button>
                 <button className={`tab-btn ${editorTab === "customlinks" ? "active" : ""}`} onClick={() => setEditorTab("customlinks")}>Custom Links</button>
+                <button className={`tab-btn ${editorTab === "analytics" ? "active" : ""}`} onClick={() => setEditorTab("analytics")} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 20V10M12 20V4M6 20v-6" /></svg>
+                  Analytics
+                </button>
               </div>
 
               {/* ── Platforms Tab ── */}
@@ -843,6 +1021,9 @@ export default function LockedIn() {
                 </div>
               )}
 
+              {/* ── Analytics Tab ── */}
+              {editorTab === "analytics" && <AnalyticsDashboard profile={profile} theme={theme} />}
+
               {/* Generate link */}
               <button className="action-btn" onClick={() => { generateShareLink(); setPage("card"); }} disabled={!profile.name} style={{ width: "100%", padding: "16px", background: profile.name ? `linear-gradient(135deg, ${accent}, ${theme.accent2})` : theme.border, border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: profile.name ? "pointer" : "default", transition: "all 0.3s", opacity: profile.name ? 1 : 0.5, marginTop: 24 }}>
                 {copied ? "Link Copied! \u2713" : "Generate & Copy Link"}
@@ -906,6 +1087,12 @@ export default function LockedIn() {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}>{followAllTriggered ? <polyline points="20 6 9 17 4 12" /> : <><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><line x1="20" y1="8" x2="20" y2="14" /><line x1="23" y1="11" x2="17" y2="11" /></>}</svg>
                         {followAllTriggered ? `Opened ${followableSocials.length} profiles` : `Follow All (${followableSocials.length})`}
                       </button>
+                      {followAllTriggered && !isOwnerViewing && (
+                        <div style={{ textAlign: "center", padding: "10px 0 4px", animation: "slideUp 0.5s ease-out" }}>
+                          <p style={{ fontSize: 12, color: subColor, marginBottom: 8 }}>Want your own Follow All link?</p>
+                          <button onClick={() => { window.location.hash = ""; window.location.reload(); }} style={{ padding: "8px 20px", background: `${accent}12`, border: `1px solid ${accent}25`, borderRadius: 10, color: accent, fontSize: 12, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}>Create Your Card</button>
+                        </div>
+                      )}
                       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "10px 0" }}><div style={{ flex: 1, height: 1, background: theme.border }} /><span style={{ fontSize: 10, color: subColor, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600 }}>or individually</span><div style={{ flex: 1, height: 1, background: theme.border }} /></div>
                       {followableSocials.map(([platform, handle], i) => {
                         const c = PLATFORMS[platform];
@@ -936,14 +1123,14 @@ export default function LockedIn() {
                   )}
                   {activeMode === "dm" && dmPlatforms.map(([platform, handle]) => {
                     const c = PLATFORMS[platform];
-                    return <button key={platform} className="action-btn" onClick={() => window.open(c.getDmUrl(handle), "_blank", "noopener")} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif", marginBottom: 8 }}><div style={{ width: 36, height: 36, borderRadius: 10, background: `${c.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>{c.icon}</div><span style={{ fontWeight: 600, color: textColor }}>DM on {c.name}</span></button>;
+                    return <button key={platform} className="action-btn" onClick={() => { window.open(c.getDmUrl(handle), "_blank", "noopener"); trackEvent(profile, "dm", platform); }} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif", marginBottom: 8 }}><div style={{ width: 36, height: 36, borderRadius: 10, background: `${c.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>{c.icon}</div><span style={{ fontWeight: 600, color: textColor }}>DM on {c.name}</span></button>;
                   })}
                   {activeMode === "book" && bookingPlatforms.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {bookingPlatforms.map(([platform, handle]) => {
                         const c = PLATFORMS[platform];
                         return (
-                          <button key={platform} className="action-btn" onClick={() => window.open(c.getProfileUrl(handle), "_blank")} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                          <button key={platform} className="action-btn" onClick={() => { window.open(c.getProfileUrl(handle), "_blank"); trackEvent(profile, "book", platform); }} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                             <div style={{ width: 36, height: 36, borderRadius: 10, background: `${c.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>{c.icon}</div>
                             <span style={{ fontWeight: 600, color: textColor }}>Book via {c.name}</span>
                           </button>
@@ -956,7 +1143,7 @@ export default function LockedIn() {
                       {paymentPlatforms.map(([platform, handle]) => {
                         const c = PLATFORMS[platform];
                         return (
-                          <button key={platform} className="action-btn" onClick={() => window.open(c.getProfileUrl(handle), "_blank")} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                          <button key={platform} className="action-btn" onClick={() => { window.open(c.getProfileUrl(handle), "_blank"); trackEvent(profile, "pay", platform); }} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "12px 16px", background: isMinimal ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.025)", border: `1px solid ${theme.border}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                             <div style={{ width: 36, height: 36, borderRadius: 10, background: `${c.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>{c.icon}</div>
                             <span style={{ fontWeight: 600, color: c.color }}>{c.name} &mdash; {handle}</span>
                           </button>
@@ -993,21 +1180,30 @@ export default function LockedIn() {
                     <button className="action-btn" onClick={handleCopy} style={{ padding: "9px 24px", background: `${accent}12`, border: `1px solid ${accent}25`, borderRadius: 10, color: accent, fontSize: 12, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}>
                       {copied ? "Link Copied! \u2713" : "Copy Link"}
                     </button>
+                    {!isOwnerViewing && (
+                      <p style={{ fontSize: 11, color: subColor, marginTop: 10, opacity: 0.6 }}>
+                        Powered by <a href={BASE_URL} style={{ color: accent, textDecoration: "none", fontWeight: 600 }}>LockedIn</a> &mdash; <a href={BASE_URL} onClick={(e) => { e.preventDefault(); window.location.hash = ""; window.location.reload(); }} style={{ color: accent, textDecoration: "none" }}>Create yours free</a>
+                      </p>
+                    )}
                   </div>
                 )}
 
                 <div style={{ marginTop: 24, textAlign: "center", lineHeight: 2.2 }}>
                   <span style={{ fontSize: 10, color: subColor, letterSpacing: 1.5, opacity: 0.5 }}>TAP &bull; SCAN &bull; CONNECT</span><br />
-                  <span style={{ fontSize: 12, color: subColor, fontFamily: "'Space Mono', monospace" }}>
+                  <a href={BASE_URL} style={{ fontSize: 12, color: subColor, fontFamily: "'Space Mono', monospace", textDecoration: "none" }}>
                     Powered by <span style={{ color: accent, fontWeight: 700 }}>LockedIn</span>
                     <span style={{ marginLeft: 8, padding: "2px 6px", background: `${accent}12`, borderRadius: 4, fontSize: 9, color: accent, letterSpacing: 1 }}>NFC READY</span>
-                  </span>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
+      {/* Viral CTA Banner */}
+      {showViralBanner && !isOwnerViewing && page === "card" && (
+        <ViralBanner theme={theme} onDismiss={() => { setShowViralBanner(false); sessionStorage.setItem("lockedin_banner_dismissed", "1"); }} />
+      )}
     </div>
   );
 }
