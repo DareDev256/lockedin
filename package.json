@@ -1,12 +1,14 @@
 {
   "name": "tapin",
-  "version": "1.0.0",
-  "description": "",
+  "version": "5.1.0",
+  "description": "One-tap connection card — share all your socials with a single link",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +19,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "vite": "^8.0.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.2"
   }
 }
