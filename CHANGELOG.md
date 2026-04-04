@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.1.1] - 2026-04-04
+
+### Added
+- README documentation for Auto-Select Feed Embeds feature
+  - Platform-to-embed mapping table (GitHub charts, YouTube players, Spotify embeds, etc.)
+  - Manual override reference (image, video_thumbnail, text_card, custom_embed)
+  - Feed config parameters and `showInFeed` toggle
+- Updated project structure description to reference feed auto-select logic
+
 ## [5.1.0] - 2026-04-04
 
 ### Added

@@ -6,6 +6,7 @@ One-tap connection card — share all your socials with a single link. NFC-ready
 
 - **60+ platforms** across 13 categories (social, video, music, gaming, developer, creator, shopping, payment, booking, messaging, portfolio, podcast, website)
 - **5 action modes** — Follow, Connect, DM, Book, Pay
+- **Auto-select feed embeds** — automatically picks the richest embed format per platform (see below)
 - **Follow All** — one tap opens every connected platform with staggered timing
 - **Analytics dashboard** — views, clicks, CTR, 7-day sparkline, platform breakdown (localStorage-backed)
 - **Profile encoding** — Base64 URL hash for zero-backend profile sharing
@@ -15,6 +16,34 @@ One-tap connection card — share all your socials with a single link. NFC-ready
 - **5 themes** — Midnight, Ocean, Sunset, Neon, Minimal
 - **PWA** — installable, works offline
 - **Viral growth loop** — post-follow CTA banner
+
+## Auto-Select Feed Embeds
+
+Every connected platform gets a live feed panel in dashboard mode. The **Auto Embed** system (`feedType: "auto"`) inspects the platform and selects the best visual format — no manual configuration needed.
+
+| Platform | Auto-selected embed |
+|---|---|
+| **GitHub** | Contribution chart (via ghchart) + profile link |
+| **YouTube** | Inline video player (iframe) — detects video IDs and channel handles |
+| **Spotify** | Artist player embed (dark theme) |
+| **Twitch** | Live channel player (muted by default) |
+| **Twitter/X** | Profile card with follow CTA |
+| **Instagram** | Avatar + gradient follow button |
+| **All others** | Icon + handle + visit link card |
+
+### Manual overrides
+
+Users can override auto-select per-platform via the feed config editor:
+
+| Feed type | Config fields | Description |
+|---|---|---|
+| `auto` | — | Platform-aware smart embed (default) |
+| `image` | `imageUrl`, `caption` | Static image with optional caption |
+| `video_thumbnail` | `videoUrl`, `thumbnailUrl`, `caption` | Video thumbnail or inline YouTube player |
+| `text_card` | `textContent` | Styled text block with platform accent |
+| `custom_embed` | `embedUrl` | Any iframe URL |
+
+Set `showInFeed: false` on any platform to hide it from the dashboard feed.
 
 ## Tech Stack
 
@@ -47,7 +76,7 @@ Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js`
 
 ```
 src/
-  TapIn.jsx      # Main React app (all UI components)
+  TapIn.jsx      # Main React app (all UI components, feed auto-select logic)
   utils.js       # Extracted pure utilities (analytics, encoding, vCard)
   utils.test.js  # 38 unit tests
   main.jsx       # Entry point
