@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.2.0] - 2026-04-08
+
+### Added
+- **Stack Identity Badge** — dynamic personality badge on the card page that analyzes your connected platforms and assigns a shareable identity label (Dev Stack, Sound Architect, Creator Economy, Content Creator, Gamer, Portfolio Pro, Entrepreneur, Social Butterfly, Polymath, Connected)
+- `computeStackIdentity()` pure function in `utils.js` — testable identity computation with priority-ordered rules across 9 platform categories
+- 11 new unit tests covering all identity types, edge cases, priority ordering, and empty/whitespace handling (33 total tests)
+- Spring-physics badge reveal animation with hover interaction
+- Badge renders with theme-aware accent colors and Space Mono typography
+
 ## [5.1.1] - 2026-04-04
 
 ### Added

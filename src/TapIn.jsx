@@ -230,6 +230,36 @@ function computeAnalytics(events) {
   return { totalViews: views.length, totalClicks: clicks.length, followAllClicks, contactSaves, platformClicks, last7, ctr };
 }
 
+// ─── Stack Identity ─────────────────────────────────────────────
+function computeStackIdentity(socials) {
+  const active = Object.entries(socials || {}).filter(([, v]) => v?.trim()).map(([k]) => k);
+  if (active.length < 3) return null;
+  const cats = {};
+  const catMap = {
+    social: ["twitter","instagram","tiktok","snapchat","threads","facebook","linkedin","pinterest","reddit","discord","telegram","bereal","mastodon","bluesky"],
+    video: ["youtube","twitch","kick","rumble"], music: ["spotify","applemusic","soundcloud","bandcamp","audiomack","tidal"],
+    gaming: ["steam","xbox","playstation","nintendo","epicgames"], developer: ["github","gitlab","codepen","stackoverflow","devto"],
+    creator: ["onlyfans","fansly","patreon","kofi","buymeacoffee","substack","medium","gumroad"],
+    shopping: ["amazonstorefront","etsy","shopify","throne"], payment: ["cashapp","venmo","paypal","bitcoin"],
+    portfolio: ["behance","dribbble","deviantart","artstation"],
+  };
+  active.forEach((p) => { for (const [cat, pl] of Object.entries(catMap)) { if (pl.includes(p)) { cats[cat] = (cats[cat] || 0) + 1; break; } } });
+  const catCount = Object.keys(cats).length;
+  const has = (p) => active.includes(p);
+  const catN = (c) => cats[c] || 0;
+  if (active.length >= 15 && catCount >= 5) return { id: "polymath", label: "Polymath", tagline: "Everywhere at once", icon: "◆" };
+  if (catN("developer") >= 3) return { id: "dev-stack", label: "Dev Stack", tagline: "Ships code daily", icon: "⌥" };
+  if (catN("music") >= 3) return { id: "music-producer", label: "Sound Architect", tagline: "Beats on every platform", icon: "♫" };
+  if (catN("creator") >= 2 && (has("youtube") || has("twitch") || has("tiktok"))) return { id: "creator-economy", label: "Creator Economy", tagline: "Building an empire", icon: "★" };
+  if (has("youtube") && (has("tiktok") || has("instagram") || has("twitch"))) return { id: "content-creator", label: "Content Creator", tagline: "Camera always rolling", icon: "▶" };
+  if (catN("gaming") >= 3) return { id: "gamer", label: "Gamer", tagline: "GG no re", icon: "◎" };
+  if (catN("portfolio") >= 2) return { id: "portfolio-pro", label: "Portfolio Pro", tagline: "Work speaks for itself", icon: "◈" };
+  if (catN("shopping") >= 1 && catN("payment") >= 1) return { id: "entrepreneur", label: "Entrepreneur", tagline: "Open for business", icon: "◇" };
+  if (catN("social") >= 8) return { id: "social-butterfly", label: "Social Butterfly", tagline: "Knows everyone", icon: "✦" };
+  if (active.length >= 5) return { id: "connected", label: "Connected", tagline: `${active.length} platforms strong`, icon: "●" };
+  return null;
+}
+
 // ─── Analytics Dashboard Component ───────────────────────────────
 function AnalyticsDashboard({ profile, theme }) {
   const [stats, setStats] = useState(null);
@@ -690,6 +720,7 @@ export default function LockedIn() {
   const theme = THEMES[profile.theme] || THEMES.midnight;
   const avatarUrl = getAvatarUrl(profile);
   const activeSocials = Object.entries(profile.socials).filter(([, v]) => v?.trim());
+  const stackIdentity = useMemo(() => computeStackIdentity(profile.socials), [profile.socials]);
   const dmPlatforms = activeSocials.filter(([p]) => PLATFORMS[p]?.supportsDm);
   const bookingPlatforms = activeSocials.filter(([p]) => ["calendly", "calcom"].includes(p));
   const paymentPlatforms = activeSocials.filter(([p]) => ["cashapp", "venmo", "paypal", "bitcoin"].includes(p));
@@ -799,6 +830,9 @@ export default function LockedIn() {
         .avatar-bounce { animation: bounceIn 0.8s ease-out, float 4s ease-in-out 0.8s infinite; }
         .feed-panel:hover { transform: translateY(-2px); }
         .live-dot { animation: livePulse 1.5s ease-in-out infinite; }
+        @keyframes badgeReveal { 0% { opacity: 0; transform: scale(0.8) translateY(6px); } 60% { transform: scale(1.04) translateY(-1px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+        .stack-badge { animation: badgeReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s backwards; }
+        .stack-badge:hover { transform: scale(1.04); filter: brightness(1.15); }
         .action-btn:hover { transform: translateY(-2px) !important; filter: brightness(1.15); }
         .edit-input { width: 100%; background: ${isMinimal ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.06)"}; border: 1px solid ${theme.border}; border-radius: 8px; padding: 10px 14px; color: ${textColor}; font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
         .edit-input:focus { border-color: ${accent}; }
@@ -1065,6 +1099,14 @@ export default function LockedIn() {
                   <h1 style={{ fontSize: 24, fontWeight: 800, color: textColor, letterSpacing: -0.5 }}>{profile.name}</h1>
                   <p style={{ fontSize: 13, color: subColor, fontFamily: "'Space Mono', monospace", marginTop: 4 }}>{profile.handle}</p>
                   <p style={{ fontSize: 13, color: subColor, marginTop: 8, textAlign: "center", lineHeight: 1.5 }}>{profile.bio}</p>
+                  {stackIdentity && (
+                    <div className="stack-badge" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 12, padding: "6px 14px 6px 10px", borderRadius: 20, background: `${accent}10`, border: `1px solid ${accent}22`, cursor: "default", transition: "all 0.25s ease" }}>
+                      <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.9 }}>{stackIdentity.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: 0.5, fontFamily: "'Space Mono', monospace" }}>{stackIdentity.label}</span>
+                      <span style={{ width: 3, height: 3, borderRadius: "50%", background: subColor, opacity: 0.4 }} />
+                      <span style={{ fontSize: 10, color: subColor, fontStyle: "italic" }}>{stackIdentity.tagline}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action mode selector */}

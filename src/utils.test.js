@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getAnalyticsKey, computeAnalytics, encodeProfile, decodeProfile, getAvatarUrl, buildVCardLines } from "./utils.js";
+import { getAnalyticsKey, computeAnalytics, encodeProfile, decodeProfile, getAvatarUrl, buildVCardLines, computeStackIdentity } from "./utils.js";
 
 const fullProfile = {
   name: "James Olusoga", handle: "daredev256", bio: "AI Solutions Engineer", theme: "neon",
@@ -152,5 +152,58 @@ describe("buildVCardLines", () => {
   it("defaults custom link label to 'Link'", () => {
     const p = { ...emptyProfile, customLinks: [{ url: "https://example.com" }] };
     expect(buildVCardLines(p, platforms)).toContain("URL;type=Link:https://example.com");
+  });
+});
+
+describe("computeStackIdentity", () => {
+  it("returns null for fewer than 3 platforms", () => {
+    expect(computeStackIdentity({})).toBeNull();
+    expect(computeStackIdentity({ twitter: "x", instagram: "y" })).toBeNull();
+  });
+  it("returns null for empty/whitespace handles", () => {
+    expect(computeStackIdentity({ twitter: "", instagram: "  ", tiktok: "" })).toBeNull();
+  });
+  it("identifies Dev Stack with 3+ developer platforms", () => {
+    const s = { github: "x", gitlab: "x", codepen: "x" };
+    const r = computeStackIdentity(s);
+    expect(r.id).toBe("dev-stack");
+    expect(r.label).toBe("Dev Stack");
+  });
+  it("identifies Sound Architect with 3+ music platforms", () => {
+    const s = { spotify: "x", soundcloud: "x", bandcamp: "x" };
+    expect(computeStackIdentity(s).id).toBe("music-producer");
+  });
+  it("identifies Creator Economy with creator + video presence", () => {
+    const s = { youtube: "x", patreon: "x", kofi: "x" };
+    expect(computeStackIdentity(s).id).toBe("creator-economy");
+  });
+  it("identifies Content Creator with youtube + social video", () => {
+    const s = { youtube: "x", tiktok: "x", instagram: "x" };
+    expect(computeStackIdentity(s).id).toBe("content-creator");
+  });
+  it("identifies Gamer with 3+ gaming platforms", () => {
+    const s = { steam: "x", xbox: "x", playstation: "x" };
+    expect(computeStackIdentity(s).id).toBe("gamer");
+  });
+  it("identifies Entrepreneur with shopping + payment", () => {
+    const s = { etsy: "x", paypal: "x", twitter: "x" };
+    expect(computeStackIdentity(s).id).toBe("entrepreneur");
+  });
+  it("identifies Connected as default for 5+ platforms", () => {
+    const s = { twitter: "x", instagram: "x", tiktok: "x", facebook: "x", linkedin: "x" };
+    const r = computeStackIdentity(s);
+    expect(r.id).toBe("connected");
+    expect(r.tagline).toContain("5");
+  });
+  it("identifies Polymath for 15+ platforms across 5+ categories", () => {
+    const s = {
+      twitter: "x", instagram: "x", tiktok: "x", facebook: "x", linkedin: "x", reddit: "x", discord: "x", telegram: "x",
+      youtube: "x", twitch: "x", spotify: "x", soundcloud: "x", github: "x", steam: "x", paypal: "x",
+    };
+    expect(computeStackIdentity(s).id).toBe("polymath");
+  });
+  it("prioritizes Dev Stack over Connected", () => {
+    const s = { github: "x", gitlab: "x", codepen: "x", stackoverflow: "x", twitter: "x", instagram: "x" };
+    expect(computeStackIdentity(s).id).toBe("dev-stack");
   });
 });

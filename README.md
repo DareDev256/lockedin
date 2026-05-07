@@ -15,6 +15,7 @@ One-tap connection card — share all your socials with a single link. NFC-ready
 - **NFC writer** — program NFC tags with your TapIn link
 - **5 themes** — Midnight, Ocean, Sunset, Neon, Minimal
 - **PWA** — installable, works offline
+- **Stack Identity Badge** — dynamic personality label based on your platform mix (Dev Stack, Creator Economy, Gamer, etc.)
 - **Viral growth loop** — post-follow CTA banner
 
 ## Auto-Select Feed Embeds
@@ -45,6 +46,25 @@ Users can override auto-select per-platform via the feed config editor:
 
 Set `showInFeed: false` on any platform to hide it from the dashboard feed.
 
+## Stack Identity
+
+Your card automatically earns a personality badge based on which platforms you connect. The system analyzes your platform mix and assigns the highest-priority matching identity:
+
+| Identity | Trigger | Icon |
+|---|---|---|
+| **Polymath** | 15+ platforms across 5+ categories | ◆ |
+| **Dev Stack** | 3+ developer platforms (GitHub, GitLab, etc.) | ⌥ |
+| **Sound Architect** | 3+ music platforms | ♫ |
+| **Creator Economy** | 2+ creator platforms + video presence | ★ |
+| **Content Creator** | YouTube + TikTok/Instagram/Twitch | ▶ |
+| **Gamer** | 3+ gaming platforms | ◎ |
+| **Portfolio Pro** | 2+ portfolio platforms | ◈ |
+| **Entrepreneur** | Shopping + payment platforms | ◇ |
+| **Social Butterfly** | 8+ social platforms | ✦ |
+| **Connected** | 5+ platforms (default) | ● |
+
+Badges appear below your bio on the card page with a spring-physics reveal animation. Requires 3+ connected platforms to activate.
+
 ## Tech Stack
 
 - React 19 + Vite 8
@@ -64,13 +84,14 @@ npm run test:watch # watch mode
 
 ## Testing
 
-Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js`:
+Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js` (33 tests):
 
 - **getAnalyticsKey** — deterministic djb2 hashing for localStorage keys
 - **computeAnalytics** — event aggregation, CTR, sparkline binning, platform breakdown
 - **encodeProfile / decodeProfile** — Base64 roundtrip with unicode support
 - **getAvatarUrl** — priority-based avatar resolution (GitHub > Twitter > Instagram)
 - **buildVCardLines** — vCard 3.0 generation with field validation
+- **computeStackIdentity** — platform mix analysis for personality badges
 
 ## Project Structure
 
@@ -78,7 +99,7 @@ Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js`
 src/
   TapIn.jsx      # Main React app (all UI components, feed auto-select logic)
   utils.js       # Extracted pure utilities (analytics, encoding, vCard)
-  utils.test.js  # 38 unit tests
+  utils.test.js  # 33 unit tests
   main.jsx       # Entry point
 public/
   widget.js      # Embeddable Follow All widget
