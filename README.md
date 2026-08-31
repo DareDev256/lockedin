@@ -1,10 +1,14 @@
-# TapIn
+# LockedIn
 
-One-tap connection card — share all your socials with a single link. NFC-ready, embeddable, zero backend.
+One-tap connection card. Share every social from a single link. NFC-ready, embeddable, no backend.
+
+The repo, the deployed site and the product are all LockedIn. The React entry
+component is still named `TapIn.jsx` and the npm package is still `tapin`,
+which was the working title.
 
 ## Features
 
-- **60+ platforms** across 13 categories (social, video, music, gaming, developer, creator, shopping, payment, booking, messaging, portfolio, podcast, website)
+- **62 platforms** across 13 categories (social, video, music, gaming, developer, creator, shopping, payment, booking, messaging, portfolio, podcast, website)
 - **5 action modes** — Follow, Connect, DM, Book, Pay
 - **Auto-select feed embeds** — automatically picks the richest embed format per platform (see below)
 - **Follow All** — one tap opens every connected platform with staggered timing
@@ -12,7 +16,7 @@ One-tap connection card — share all your socials with a single link. NFC-ready
 - **Profile encoding** — Base64 URL hash for zero-backend profile sharing
 - **vCard export** — download contact card with all socials and custom links
 - **Embeddable widget** — drop `widget.js` into any page
-- **NFC writer** — program NFC tags with your TapIn link
+- **NFC writer** — program NFC tags with your LockedIn link
 - **5 themes** — Midnight, Ocean, Sunset, Neon, Minimal
 - **PWA** — installable, works offline
 - **Stack Identity Badge** — dynamic personality label based on your platform mix (Dev Stack, Creator Economy, Gamer, etc.)
@@ -84,7 +88,7 @@ npm run test:watch # watch mode
 
 ## Testing
 
-Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js` (33 tests):
+Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js`. Run `npm test`:
 
 - **getAnalyticsKey** — deterministic djb2 hashing for localStorage keys
 - **computeAnalytics** — event aggregation, CTR, sparkline binning, platform breakdown
@@ -99,7 +103,7 @@ Core utilities are extracted to `src/utils.js` and tested in `src/utils.test.js`
 src/
   TapIn.jsx      # Main React app (all UI components, feed auto-select logic)
   utils.js       # Extracted pure utilities (analytics, encoding, vCard)
-  utils.test.js  # 33 unit tests
+  utils.test.js  # unit tests, run with npm test
   main.jsx       # Entry point
 public/
   widget.js      # Embeddable Follow All widget
